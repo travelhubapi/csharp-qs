@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Web;
 
 namespace QueryString
 {
@@ -12,16 +11,19 @@ namespace QueryString
     {
 
 
-        public static string Stringify(object obj, string prefix = "", bool encode = true)
+        public static string Stringify(object obj, string prefix = "")
         {
             var result = _stringify(obj, prefix);
             var query = result.Remove(result.Length - 1);
-
-            return encode ? HttpUtility.UrlEncode(query) : query;
+            return query;
         }
 
         private static string _stringify(object obj, string prefix = "", string format = "{0}={1}&")
         {
+            if (obj == null)
+            {
+                return string.Empty;
+            }
             StringBuilder result = new StringBuilder();
             var type = obj.GetType();
             var typeName = type.Name;
@@ -57,7 +59,7 @@ namespace QueryString
                     i++;
                 }
             }
-            else if (type.IsPrimitive || typeName == "String")
+            else if (type.IsPrimitive || type.IsEnum || typeName == "String")
             {
                 result.Append(String.Format(format, prefix, obj));
 
