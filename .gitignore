@@ -6,6 +6,7 @@
 *.Publish.xml
 *.Cache$
 packages
+nupkgs
 TestResults
 
 _UpgradeReport_Files/

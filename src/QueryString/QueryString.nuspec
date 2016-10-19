@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/travelhubapi/csharp-qs</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>A query string utility for .NET to stringify complex objects</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>Query String QS Stringify Complex Objects Parse</tags>
+  </metadata>
+</package>
