@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("QueryString")]
 [assembly: AssemblyDescription("A query string utility for .NET to stringify complex objects")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("TravelHubApi")]
+[assembly: AssemblyCompany("Flytour")]
 [assembly: AssemblyProduct("QueryString")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
