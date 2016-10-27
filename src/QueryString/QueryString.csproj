@@ -67,15 +67,42 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
+
+  <!-- Nuget auto publish start -->
   <PropertyGroup>
-    <NugetOutputDirectory>$(SolutionDir)nupkgs\$(ConfigurationName)</NugetOutputDirectory>
+    <NugetExe>nuget</NugetExe>
+    <NugetExe Condition="Exists('$(SolutionDir).nuget\NuGet.exe')">$(SolutionDir).nuget\NuGet.exe</NugetExe>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>nuget pack $(ProjectPath) -Properties Configuration=$(ConfigurationName) -IncludeReferencedProjects -Output $(NugetOutputDirectory)</PostBuildEvent>
+    <NugetOutputDirectory>$(SolutionDir)nupkgs\$(ConfigurationName)</NugetOutputDirectory>
   </PropertyGroup>
   <Target Name="BeforeBuild">
     <MakeDir Directories="$(NugetOutputDirectory)" Condition="!Exists('$(NugetOutputDirectory)')" />
   </Target>
+  <Target Name="GeneratePackage">
+    <!-- Publish the nupkg to the well known NuGet server
+          Note: "nuget setApiKey {put-your-api-key-here} -Source http://My_Nuget_Gallery_Service_Url/" must be run prior on the machine to ensure the api key is set correctly. -->
+    <Exec WorkingDirectory="$(PackageDir)" Command="$(NugetExe) pack &quot;$(ProjectPath)&quot; -Properties Configuration=&quot;$(ConfigurationName)&quot; -IncludeReferencedProjects -Output &quot;$(NugetOutputDirectory)&quot;" />
+  </Target>
+  <Target Name="Publish">
+    <!-- Publish the nupkg to the well known NuGet server
+          Note: "nuget setApiKey {put-your-api-key-here} -Source http://My_Nuget_Gallery_Service_Url/" must be run prior on the machine to ensure the api key is set correctly. -->
+    <Exec WorkingDirectory="$(PackageDir)" Command="$(NugetExe) push &quot;$(NugetOutputDirectory)\$(AssemblyName).%(OutputAssemblyInfo.Version).nupkg&quot;" />
+  </Target>
+  <Target Name="GetAssemblyInfo">
+    <!-- Load up the information from the assembly -->
+    <GetAssemblyIdentity AssemblyFiles="$(OutputPath)$(AssemblyName).dll">
+      <Output TaskParameter="Assemblies" ItemName="OutputAssemblyInfo" />
+    </GetAssemblyIdentity>
+    <Message Text="Info: %(OutputAssemblyInfo.Version)" />
+  </Target>
+  <Target Name="AfterBuild">
+    <CallTarget Targets="GetAssemblyInfo" />
+    <CallTarget Targets="GeneratePackage" />
+    <CallTarget Targets="Publish" Condition="'$(ConfigurationName)' == 'PublishPackage'" />
+  </Target>
+  <!-- Nuget auto publish end -->
+  
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -5,6 +5,7 @@
 *.sln.docstates
 *.Publish.xml
 *.Cache$
+*.Cache
 packages
 nupkgs
 TestResults
