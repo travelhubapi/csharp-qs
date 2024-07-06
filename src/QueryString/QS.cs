@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace QueryString
 {
@@ -11,70 +8,61 @@ namespace QueryString
     {
         public static string Stringify(object obj, string prefix = "")
         {
-            var result = _stringify(obj, prefix);
-            var query = result.Remove(result.Length - 1);
-            return query;
+            return string.Join("&", ToKeyValuePairs(obj, prefix).Select(kvp => $"{kvp.Key}={kvp.Value}"));
         }
 
-        private static string _stringify(object obj, string prefix = "", string format = "{0}={1}&")
+        public static IEnumerable<KeyValuePair<string, string>> ToKeyValuePairs(object obj, string prefix = "")
         {
-            if (obj == null)
-            {
-                return string.Empty;
-            }
-
-            StringBuilder result = new StringBuilder();
             var type = obj.GetType();
-            var typeName = type.Name;
             var genericEnumerableInterface = type.GetInterfaces().FirstOrDefault(
-                                  i => i.IsGenericType &&
-                                      i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-            var isIterable = genericEnumerableInterface != null && typeName != "String";
+                i => i.IsGenericType &&
+                     i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            var isIterable = genericEnumerableInterface != null && !(obj is string);
+            
+            foreach (var kvp in isIterable ? ConvertEnumerable((IEnumerable)obj, prefix) : ConvertObject(obj, prefix))
+                yield return kvp;
+        }
 
-            if (isIterable)
+        private static IEnumerable<KeyValuePair<string, string>> ConvertEnumerable(IEnumerable obj, string prefix)
+        {
+            var i = 0;
+            foreach (var item in obj)
             {
-                var i = 0;
-                foreach (var item in (IEnumerable)obj)
+                var itemType = item.GetType();
+                if (!itemType.IsPrimitive && !(item is string))
                 {
-                    var itemType = item.GetType();
-                    if (!itemType.IsPrimitive && itemType.Name != "String")
+                    var pre = string.IsNullOrWhiteSpace(prefix)
+                        ? $"{i}"
+                        : $"{prefix}[{i}]";
+                    foreach (var prop in itemType.GetProperties())
                     {
-                        var properties = itemType.GetProperties();
-                        foreach (var prop in properties)
-                        {
-                            var propValue = prop.GetValue(item);
-                            var propType = prop.PropertyType;
-                            var _format = string.IsNullOrEmpty(prefix) ? "{1}[{2}]" : "{0}[{1}][{2}]";
-                            result.Append(_stringify(propValue, string.Format(_format, prefix, i, prop.Name), format));
-                        }
+                        var propValue = prop.GetValue(item);
+                        foreach (var kvp in ToKeyValuePairs(propValue, $"{pre}[{prop.Name}]"))
+                            yield return kvp;
                     }
-                    else
-                    {
-                        typeName = string.Empty;
-                        result.Append(string.Format("{0}[{1}]={2}&", prefix, i, item));
-                    }
-
-                    i++;
                 }
+                else
+                {
+                    yield return new KeyValuePair<string, string>($"{prefix}[{i}]", $"{item}");
+                }
+
+                i++;
             }
-            else if (type.IsPrimitive || type.IsEnum || typeName == "String")
-            {
-                result.Append(string.Format(format, prefix, obj));
-            }
+        }
+
+        private static IEnumerable<KeyValuePair<string, string>> ConvertObject(object obj, string prefix = "")
+        {
+            var type = obj.GetType();
+            if (type.IsPrimitive || type.IsEnum || obj is string)
+                yield return new KeyValuePair<string, string>(prefix, $"{obj}");
             else
-            {
-                var properties = type.GetProperties();
-                foreach (var prop in properties)
+                foreach (var prop in type.GetProperties())
                 {
                     var propValue = prop.GetValue(obj);
-                    var propType = prop.PropertyType;
-                    var p = string.IsNullOrEmpty(prefix) ? prefix : prefix + ".";
-                    result.Append(_stringify(propValue, p + prop.Name, format));
+                    var subPrefix = string.IsNullOrEmpty(prefix) ? prop.Name : $"{prefix}.{prop.Name}";
+                    foreach (var kvp in ToKeyValuePairs(propValue, subPrefix))
+                        yield return kvp;
                 }
-            }
-
-            var query = result.ToString();
-            return query;
         }
     }
 }

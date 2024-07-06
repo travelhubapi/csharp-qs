@@ -38,8 +38,25 @@ System.Console.WriteLine(queryString);
 
 
 ```
-### `QS.Stringify(object obj, prefix = "", encode = true)`
+
+#### Flurl (https://flurl.dev/)
+
+You can add the following extensionMethod on Flurl and use it fluent instead of `SetQueryParams()` (https://flurl.dev/docs/fluent-url/#fluent-url-building).
+
+```cs
+public static Url SetQueryParamsFromComplexObject(this Url @this, object obj, NullValueHandling nullValueHandling = NullValueHandling.Remove)
+{
+    if (obj == null)
+        return @this;
+    foreach (var kv in QS.ToKeyValuePairs(obj))
+        @this.SetQueryParam(kv.Key, kv.Value, nullValueHandling);
+    return @this;
+}
+```
+
+### Parameter
+
+`QS.Stringify(object obj, prefix = "")`
 
 * obj - Object to be stringified
 * prefix - a prefix to parameters in output
-* encode - return string encoded

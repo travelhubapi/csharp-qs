@@ -1,9 +1,7 @@
 ﻿using QueryString.Tests.Objects;
 using FluentAssertions;
-using System;
 using Xunit;
 using System.Collections.Generic;
-using System.Web;
 
 
 namespace QueryString.Tests
@@ -108,7 +106,7 @@ namespace QueryString.Tests
         [Trait("QS - Stringify", "Prefix")]
         [Trait("QS - Stringify", "Array")]
         [Fact(DisplayName = "QS - Stringify Array With Prefix")]
-        public void Should_Stringify_Array_With_Prefif()
+        public void Should_Stringify_Array_With_Prefix()
         {
             var rooms = new List<RoomParameter>();
             var room = new RoomParameter();
